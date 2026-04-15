@@ -2,6 +2,7 @@ from graph.state import AgentState
 from llm.vllm_client import compile_directive
 from memory.lancedb_store import save_directive_to_disk
 from memory.router import add_new_route
+from local_mcp.client import mcp_operator  # Import the operator
 from llm.schemas import CompiledDirective, RAGStep
 import asyncio
 
@@ -10,9 +11,15 @@ async def background_compiler_node(state: AgentState):
     if state.get("needs_compilation") and state.get("task_completed"):
         print("\n[Background] Piko is compiling new RAG directive...")
 
+        # FIX: Get the actual tools currently loaded in the system [cite: 29]
+        valid_tools = list(mcp_operator.tool_map.keys())
+
         try:
-            # 1. Ask vLLM to write the JSON directive based on what just happened
-            directive = await compile_directive(state["execution_history"])
+            # Pass the valid tools to the compiler [cite: 1]
+            directive = await compile_directive(
+                state["execution_history"],
+                valid_tools=valid_tools
+            )
         except Exception as e:
             print(f"[Background] vLLM compile failed: {e}. Generating fallback directive.")
             directive = CompiledDirective(
@@ -26,10 +33,8 @@ async def background_compiler_node(state: AgentState):
         safe_name = "".join(c for c in safe_name if c.isalnum() or c == "_")
 
         save_directive_to_disk(directive.model_dump(), safe_name)
-
-        # 3. Update the semantic router immediately
         add_new_route(safe_name, directive.trigger_phrases)
 
-        print(f"[Background] Compilation complete. Route '{safe_name}' added to Autopilot.")
+        print(f"[Background] Compilation complete. Route '{safe_name}' added.")
 
     return state
