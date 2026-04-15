@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "piko-agent"
+version = "0.1.0"
+description = "A self-optimizing, local RAG compiler agent built for RTX 5080."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "vllm>=0.4.0",                  # The Heavy LLM Piko engine
+    "semantic-router[ollama]>=0.0.40",      # The sub-millisecond Autopilot
+    "langgraph>=0.0.30",            # The Flight Computer state machine
+    "langchain-core>=0.1.50",       # Core messaging structures for LangGraph
+    "lancedb>=0.5.0",               # Memory banks (local embedded vector DB)
+    "mcp>=0.1.0",                   # Anthropic's Model Context Protocol SDK
+    "pydantic>=2.0.0",              # Data validation for xgrammar JSON enforcement
+    "openai>=1.14.0"                # Async client to interface with local vLLM API
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "isort>=5.13.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["graph*", "memory*", "local_mcp*", "llm*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"

@@ -1,0 +1,13 @@
+input.txt
+project_context.txt
+uv.lock
+piko_agent.egg-info
+
+*.db
+
+__pycache__
+.lancedb
+
+.venv
+
+compiled_directives
